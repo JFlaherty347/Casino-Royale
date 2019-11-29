@@ -30,14 +30,14 @@ class TrainAndSaveModel(network.Network):
     #
     #HYPERPARAMETERS
     #
-    num_iterations = 25000 #number of batches in an epoch(a single passthrough of a dataset)
+    num_iterations = 30000 #number of batches in an epoch(a single passthrough of a dataset)
     #
     initial_collect_steps = 1000
     collect_steps_per_iteration = 1
     replay_buffer_capacity = 50000
     #
-    batch_size = 64 #number of training examples before updating model
-    learning_rate  = 0.01 #a measure of how resistant a model is to change (important)
+    batch_size = 75 #number of training examples before updating model
+    learning_rate  = 0.001 #a measure of how resistant a model is to change (important)
     log_interval = 200 #for printing progress during training
     #
     num_eval_episodes = 10
@@ -48,18 +48,18 @@ class TrainAndSaveModel(network.Network):
     #HELPER METHODS
     #
     #records the data that results from executing the specified policy in the environment into the buffer
-    def collect_step(env, policy, buffer):
-        time_step = env.current_time_step()
-        action_step = policy.action(time_step)
-        next_time_step = env.step(action_step.action)
-        traject = trajectory.from_transition(time_step, action_step, next_time_step)
-
-        buffer.add_batch(traject)
+    #def collect_step(env, policy, buffer):
+        
 
     #record data over specified number of steps
     def collect_data(env, policy, buffer, steps):
         for _ in range(steps):
-            collect_step(env, policy, buffer)
+            time_step = env.current_time_step()
+            action_step = policy.action(time_step)
+            next_time_step = env.step(action_step.action)
+            traject = trajectory.from_transition(time_step, action_step, next_time_step)
+
+            buffer.add_batch(traject)
 
     #average the reward gained by the policy (TODO: parallelize this function)
     def avg_return(env, policy, num_episodes = 10):
@@ -142,37 +142,40 @@ class TrainAndSaveModel(network.Network):
     agent.train_step_counter.assign(0) #reset
 
     #Evaluate the initialized policy prior to training for baseline
-    avg_return = avg_return(tf_env, agent.policy, num_eval_episodes)
-    returns = [avg_return] #holds average returns from multiple points during training
+    avg = avg_return(tf_env, agent.policy, num_eval_episodes)
+    returns = [avg] #holds average returns from multiple points during training
 
     #main training loop
     for _ in range(num_iterations):
-
-        #collect steps and save to buffer based on hyperparameter
-        for _ in range(collect_steps_per_iteration):
-            collect_step(tf_env, agent.collect_policy, replay_buffer)
+        
+        collect_data(tf_env, agent.collect_policy, replay_buffer, collect_steps_per_iteration)
 
         #sample and update network
         exp, _ = next(iterator)
-        loss = agent.train(experience).loss
+        loss = agent.train(exp).loss
 
         #get step
         step = agent.train_step_counter.numpy()
 
         #log progress or evaluate policy if needed (depending on hyperparameters)
         if(step % log_interval == 0):
-            print('step = {0}: loss = {1}'.format(step, avg_return))
+            print('step = {0}: loss = {1}'.format(step, avg))
 
         if(step % eval_interval == 0):
-            avg_return = avg_return(tf_env, agent.policy, num_eval_episodes)
-            print('step = {0}: Average retrun = {1}'.format(step, avg_return))
-            returns.append(avg_return)
+            avg = avg_return(tf_env, agent.policy, num_eval_episodes)
+            print('step = {0}: Average retrun = {1}'.format(step, avg))
+            returns.append(avg)
 
 
 
     #results
-    iterations = (0, num_iterations+1, eval_interval)
+    iterations = range(0, num_iterations+1, eval_interval)
 
     plt.plot(iterations, returns)
     plt.ylabel('Average Return')
     plt.xlabel('Iteration')
+    plt.ylim(top = 0)
+    plt.title('Average Return Over Time')
+    plt.show()
+
+    tf.saved_model.save(agent, "./")

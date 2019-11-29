@@ -17,7 +17,7 @@ from tf_agents.environments import tf_py_environment
 
 from tf_agents.policies import q_policy
 
-class QNetwork(network.Network):
+class TrainAI(network.Network):
 
     #initialize environment and wrap it in tf environment
     env = benv.BlackjackEnv()
