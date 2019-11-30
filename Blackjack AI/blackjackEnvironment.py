@@ -47,8 +47,9 @@ class BlackjackEnv(py_environment.PyEnvironment):
 
    #Resets Environment to initial state. Returns state of environment
     def _reset(self):
-        starterCard1 = np.random.randint(2,12) #draw first 2 cards
-        starterCard2 = np.random.randint(2,12)
+    	#draw first 2 cards
+        starterCard1 = self.drawNewCard()
+        starterCard2 = self.drawNewCard()
         #set state with current sum and first 2 cards drawn
         self._state = [(starterCard1 + starterCard2), starterCard1, starterCard2, 0, 0, 0, 0, 0, 0] 
         self._episode_ended = False #reset end boolean
@@ -60,12 +61,11 @@ class BlackjackEnv(py_environment.PyEnvironment):
         if (self._episode_ended):
             return self.reset()
 
-
         #behavior for valid input
         if (action == 0 or self._state[8] != 0):
             self._episode_ended = True #stand or max of 4 hits
         elif (action == 1):
-            newCard = np.random.randint(2,12)
+            newCard = self.drawNewCard()
             self._state[0] += newCard
 
             #start looking at 4th spot since first 3 are set by default
@@ -98,9 +98,17 @@ class BlackjackEnv(py_environment.PyEnvironment):
             return ts.transition(np.array([self._state], dtype=np.int32), reward = 0.0, discount = 1.0)
 
 
+    #helper method to get a new card
+    def drawNewCard(self):
+    	#there are 4 tens with: actual 10, Jack, Queen, and King
+    	cards = [2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11]
+    	newCardIndex = np.random.randint(0,13)
+
+    	return cards[newCardIndex]
+
+
 '''
 #Environment validation
-#main
 env = BlackjackEnv() #Initialize python enviornment
 #utils.validate_py_environment(environment, episodes = 5)i #validate env works
 

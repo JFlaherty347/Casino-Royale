@@ -3,7 +3,7 @@ import numpy as np
 import blackjackEnvironment as benv
 import matplotlib
 import matplotlib.pyplot as plt
-
+import time
 
 from tf_agents.specs import array_spec
 from tf_agents.specs import tensor_spec
@@ -30,18 +30,22 @@ class TrainAndSaveModel(network.Network):
     #
     #HYPERPARAMETERS
     #
-    num_iterations = 30000 #number of batches in an epoch(a single passthrough of a dataset)
+    num_iterations = 20000 #number of batches in an epoch(a single passthrough of a dataset)
     #
-    initial_collect_steps = 1000
+    initial_collect_steps = 2000
     collect_steps_per_iteration = 1
-    replay_buffer_capacity = 50000
+    replay_buffer_capacity = 200000
     #
-    batch_size = 75 #number of training examples before updating model
-    learning_rate  = 0.001 #a measure of how resistant a model is to change (important)
-    log_interval = 200 #for printing progress during training
+    batch_size = 70 #number of training examples before updating model
+    learning_rate  = 0.0036 #a measure of how resistant a model is to change (important)
+    log_interval = 500 #for printing progress during training
     #
-    num_eval_episodes = 10
+    num_eval_episodes = 15
     eval_interval = 1000 #for deciding when to add a data point of progress
+    #
+    epsilon = 0.039 #probability of choosing a random action to avoid over/under fitting of model
+    gamma = .92 #dicount factor for future rewards
+    name = "BlackjackSavant"
     #END OF HYPERPARAMETERS
 
     #
@@ -84,6 +88,9 @@ class TrainAndSaveModel(network.Network):
     #MAIN EXECUTION
     #
 
+    #get start time
+    start_time = time.time()
+
     #initialize environment and wrap it in tf environment
     env = benv.BlackjackEnv()
     tf_env = tf_py_environment.TFPyEnvironment(env)
@@ -94,20 +101,16 @@ class TrainAndSaveModel(network.Network):
                                  fc_layer_params = (100,))
 
     #initialize the agent with the listed parameters
-    agent = dqn_agent.DqnAgent(tf_env.time_step_spec(),
+    agent = dqn_agent.DdqnAgent(tf_env.time_step_spec(),
     	tf_env.action_spec(),
     	q_network = network,
     	optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate = learning_rate),
     	td_errors_loss_fn = common.element_wise_squared_loss,
-        train_step_counter = tf.Variable(0))
+        train_step_counter = tf.Variable(0),
+        epsilon_greedy = epsilon,
+        gamma = gamma,
+        name = name)
     agent.initialize()
-
-    #create q policy for the agent to use to evaluate actions
-    #policy = q_policy.QPolicy(tf_env.time_step_spec(),
-    #                          tf_env.action_spec(),
-    #                          q_network = network,
-    #                          action_step = 
-
     
     #create replay buffer to keep track of training
     replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(agent.collect_data_spec, 
@@ -166,16 +169,19 @@ class TrainAndSaveModel(network.Network):
             print('step = {0}: Average retrun = {1}'.format(step, avg))
             returns.append(avg)
 
-
-
     #results
-    iterations = range(0, num_iterations+1, eval_interval)
 
+    #runtime
+    print("<><><>runtime: %s seconds<><><>" %(time.time() - start_time))
+
+    #save the trained agent in the saved_model format for later use
+    tf.saved_model.save(agent, "./")
+
+    #produce graph of training process
+    iterations = range(0, num_iterations+1, eval_interval)
     plt.plot(iterations, returns)
     plt.ylabel('Average Return')
     plt.xlabel('Iteration')
     plt.ylim(top = 0)
     plt.title('Average Return Over Time')
     plt.show()
-
-    tf.saved_model.save(agent, "./")

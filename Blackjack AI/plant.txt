@@ -1,3 +1,0 @@
-1. follow rest of dqn tutorial (collab 1)
-2. add model saving/export
-3. create new class that loads that model and plays games using its decisions
