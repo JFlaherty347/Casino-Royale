@@ -28,7 +28,7 @@ tf.compat.v1.enable_v2_behavior()
 #Enviornment class to probide representation of blackjack for agent to learn
 class BlackjackEnv(py_environment.PyEnvironment):
     
-    #initializs the Environment for Liars Dice
+    #initializs the Environment for blackjack
     def __init__(self):
         #Specify available actions: 0 = hold, 1 = hit; 
         self._action_spec = array_spec.BoundedArraySpec(shape = (1,), dtype = np.int32, minimum = 0, maximum = 1, name = 'action')
@@ -53,6 +53,12 @@ class BlackjackEnv(py_environment.PyEnvironment):
         #set state with current sum and first 2 cards drawn
         self._state = [(starterCard1 + starterCard2), starterCard1, starterCard2, 0, 0, 0, 0, 0, 0] 
         self._episode_ended = False #reset end boolean
+
+        #check for double aces to avoid instant bust
+        if(self._state[0] > 21):
+        	self._state[1] = 1		#change ace to 1
+        	self._state[0] = 12		#update sum
+
         return ts.restart(np.array([self._state], dtype = np.int32)) #return a time_step
 
     #Takes action and returns reward

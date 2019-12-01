@@ -2,7 +2,7 @@ import tensorflow as tf
 import multiprocessing as mp
 import numpy as np
 from multiprocessing import Process, Lock
-from BlackjackEnv import drawNewCard
+import blackjackEnvironment as benv
 
 #uses same state format as blackjackEnv.py
 class multiHandBlackJack():
@@ -16,32 +16,36 @@ class multiHandBlackJack():
 	def __init__(self):
 		#load trained agent from disk
 		self.agent = tf.saved_model.load("/models/")
+		self.agent().initialize()
+
+		self.env = benv.BlackjackEnv()
+		self.tf_env = tf_py_environment.TFPyEnvironment(self.env)
 		#setup GUI
-		#setup AI
 
 	#visualize the hand that just happened
 	def updateGUI():
 		#show hands
 		#show win/loss
 		#show updated balances
+		print("implement me")
 
 	#player plays a hand using DDQNN
 	def player(playerID, player_scores):
 		print('Hello I am player ' + str(playerID))
 		#lock before accessing player_scores
 
-	#Dealer who plays as all houses do (at least 17);
+	#Dealer who plays as all houses do (at least 17); used to simulate dealer playstyle to see if players win
 	def getDealerScore():
 		#get starter cards
-		starterCard1 = self.drawNewCard()
-		starterCard2 = self.drawNewCard()
+		starterCard1 = self.benv.drawNewCard()
+		starterCard2 = self.benv.drawNewCard()
 		#define dealer's state
 		dealer_state = [(starterCard1 + starterCard2), starterCard1, starterCard2, 0, 0, 0, 0, 0, 0] 
 
 		#hit if under 17, otherwise stand
 		currentCardIndex = 3
 		while(dealer_state[0] < 17 and currentCardIndex < 9):
-			newCard = self.drawNewCard()
+			newCard = self.benv.drawNewCard()
 			#update sum with newest card and add it to cards
 			dealer_state[0] += newCard
 			dealer_state[currentCardIndex] = newCard

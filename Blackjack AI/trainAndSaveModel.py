@@ -21,6 +21,7 @@ from tf_agents.environments import tf_py_environment
 from tf_agents.eval import metric_utils
 from tf_agents.metrics import tf_metrics
 from tf_agents.policies import q_policy
+from tf_agents.policies import policy_saver
 from tf_agents.utils import common
 from tf_agents.policies import random_tf_policy
 from tf_agents.trajectories import trajectory
@@ -30,21 +31,21 @@ class TrainAndSaveModel(network.Network):
     #
     #HYPERPARAMETERS
     #
-    num_iterations = 20000 #number of batches in an epoch(a single passthrough of a dataset)
+    num_iterations = 25000 #number of batches in an epoch(a single passthrough of a dataset)
     #
     initial_collect_steps = 2000
     collect_steps_per_iteration = 1
     replay_buffer_capacity = 200000
     #
-    batch_size = 70 #number of training examples before updating model
+    batch_size = 85 #number of training examples before updating model
     learning_rate  = 0.0036 #a measure of how resistant a model is to change (important)
     log_interval = 500 #for printing progress during training
     #
     num_eval_episodes = 15
     eval_interval = 1000 #for deciding when to add a data point of progress
     #
-    epsilon = 0.039 #probability of choosing a random action to avoid over/under fitting of model
-    gamma = .92 #dicount factor for future rewards
+    epsilon = 0.04 #probability of choosing a random action to avoid over/under fitting of model
+    gamma = .95 #dicount factor for future rewards
     name = "BlackjackSavant"
     #END OF HYPERPARAMETERS
 
@@ -88,6 +89,9 @@ class TrainAndSaveModel(network.Network):
     #MAIN EXECUTION
     #
 
+    #check for eager execution (should be default in tf2.0)
+    #print("****************Executing Eagerly: " + str(tf.executing_eagerly()) )
+
     #get start time
     start_time = time.time()
 
@@ -104,7 +108,7 @@ class TrainAndSaveModel(network.Network):
     agent = dqn_agent.DdqnAgent(tf_env.time_step_spec(),
     	tf_env.action_spec(),
     	q_network = network,
-    	optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate = learning_rate),
+    	optimizer = tf.optimizers.Adam(learning_rate = learning_rate),
     	td_errors_loss_fn = common.element_wise_squared_loss,
         train_step_counter = tf.Variable(0),
         epsilon_greedy = epsilon,
@@ -175,7 +179,10 @@ class TrainAndSaveModel(network.Network):
     print("<><><>runtime: %s seconds<><><>" %(time.time() - start_time))
 
     #save the trained agent in the saved_model format for later use
+    policy_saver = policy_saver.PolicySaver(agent.policy, batch_size = None)
+    policy_saver.save('policy')
     tf.saved_model.save(agent, "./")
+
 
     #produce graph of training process
     iterations = range(0, num_iterations+1, eval_interval)
