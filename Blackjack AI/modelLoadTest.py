@@ -12,7 +12,6 @@ class modelLoadTest():
 
 		self.env = benv.BlackjackEnv()
 		self.tf_env = tf_py_environment.TFPyEnvironment(self.env)
-		#self.policy = self.agent.policy()
 
 #test
 model = modelLoadTest()
@@ -33,7 +32,11 @@ for i in range(num_hands):
 		action_step, policy_state, _info = model.policy.action(time_step, policy_state)
 		time_step = model.tf_env.step(action_step)
 
+
 		print("\n&&&&&&&&&&&&&&&&\n" + str(time_step))
+
+		player_state = time_step.observation.numpy()
+		print("\n\n\n@@@@" + str(player_state[0][0]) )
 		#print("\n****************\n" + str(action_step))
 
 	print("\nhand is done")
