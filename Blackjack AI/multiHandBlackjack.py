@@ -2,12 +2,14 @@ import tensorflow as tf
 import threading
 import numpy as np
 import blackjackEnvironment as benv
-import tkinter as tk
+import tkinter
 
 from threading import Thread, Lock
 from tf_agents.environments import py_environment
 from tf_agents.environments import tf_environment
 from tf_agents.environments import tf_py_environment
+from tkinter import *
+from PIL import ImageTk, Image
 
 #GLOBALS
 starting_balance = 5000
@@ -143,7 +145,7 @@ for i in range(num_players):
 ### GUI methods 
 
 #button methods
-def onBetPress(betAmount, game, balance_labels, net_return_label, sum_labels):
+def onBetPress(betAmount, game, balance_labels, net_return_label, sum_labels, hand_labels):
 	#conduct next hand
 	game.onNextBet(betAmount)
 
@@ -152,7 +154,7 @@ def onBetPress(betAmount, game, balance_labels, net_return_label, sum_labels):
 		balance_labels[i].config(text = "P" + str(i+1) + " Balance: $" + str(player_balances[i]))
 
 	updateNetReturn(net_return_label)
-	updateHands(sum_labels)
+	updateHands(sum_labels, hand_labels)
 
 def onResetPress(balance_labels, net_return_label):
 	#set all balances to starting balance
@@ -176,7 +178,7 @@ def updateNetReturn(net_return_label):
 	#update net return label
 	net_return_label.config(text = "Net Return: $" + str(net_return))
 
-def updateHands(sum_labels):
+def updateHands(sum_labels, hand_labels):
 	#update sums (all players + dealer)
 	for i in range(num_players + 1):
 		#update sum differently if bust(stored as -21)
@@ -186,18 +188,52 @@ def updateHands(sum_labels):
 			#[i][0] is the sum for the ith player; note that dealer is included in player state
 			sum_labels[i].config(text = "Sum: " + str(player_states[i][0]))
 
+	#update cards for all players
+	for i in range(num_players + 1):
+		#for first 5 cards (skipping 0 because it is the sum and ending at 5 for sake of visibility)
+		for j in range(1, 6):
+			#get image path
+			image_path = getCardImagePath(player_states[i][j], i)
+			new_card_image = Image.open(image_path).resize((99, 151), Image.ANTIALIAS)
+			new_card_image = ImageTk.PhotoImage(new_card_image)
+			#update label with new card image
+			hand_labels[i][j-1].config(image = new_card_image)
+			hand_labels[i][j-1].image = new_card_image
+
+
+			
+
+def getCardImagePath(value, player):
+	#cards are name as [value](face)
+	card_path = "./assets/cards/"
+	suit = getRandomSuit()
+
+	if(value == 0):						#check if empty card
+		back_colors = ["red", "blue", "yellow", "green", "gray"] #back colors per player
+		card_path += back_colors[player] + "_back"
+	elif(value == 1 or value == 11):	#check if ace(listed as 1 or 11)
+		card_path += "A" + getRandomSuit()
+	else:								#normal card
+		card_path += str(int(value)) + getRandomSuit()
+
+	return card_path + ".png"
+
+def getRandomSuit():
+	suits = ["C", "D", "H", "S"]
+	return suits[np.random.randint(0, 4)]
+
 ###window creation
 
 #create game class
 game = multiHandBlackJack()
 
 #create a window, title it, and set size
-window = tk.Tk()
+window = Tk()
 window.title("Blackjack")
 window.geometry('1700x900')
 
 #get icon file
-icon = tk.PhotoImage(file = "./assets/blackjackicon.png")
+icon = PhotoImage(file = "./assets/blackjackicon.png")
 
 #set icon of window
 window.iconphoto(False, icon)
@@ -209,23 +245,16 @@ window.iconphoto(False, icon)
 #add labels for balances
 balances = []
 
-p1_balance_label = tk.Label(window, text = "P1 Balance: $" + str(player_balances[0]), font = ("Garamond", 20))
-p2_balance_label = tk.Label(window, text = "P2 Balance: $" + str(player_balances[1]), font = ("Garamond", 20))
-p3_balance_label = tk.Label(window, text = "P3 Balance: $" + str(player_balances[2]), font = ("Garamond", 20))
-p4_balance_label = tk.Label(window, text = "P4 Balance: $" + str(player_balances[3]), font = ("Garamond", 20))
-
-#add labels to list
-balances.append(p1_balance_label)
-balances.append(p2_balance_label)
-balances.append(p3_balance_label)
-balances.append(p4_balance_label)
+#create labels for balance of each player and put them into the balances array
+for i in range(num_players):
+	balances.append(Label(window, text = "P" + str(i+1) +" Balance: $" + str(player_balances[0]), font = ("Garamond", 20)))
 
 #place labels on grid
 for i in range(num_players):
 	balances[i].grid(column = i, row = 1, padx = 15, pady = 10)
 
 #create label to mark dealer's column and place it on the grid
-dealer_label = tk.Label(window, text = "Dealer", font = ("Garamond", 20))
+dealer_label = Label(window, text = "Dealer", font = ("Garamond", 20))
 dealer_label.grid(column = 4, row = 1, padx = 15, pady = 10)
 
 ###hand visualization
@@ -233,49 +262,107 @@ dealer_label.grid(column = 4, row = 1, padx = 15, pady = 10)
 #add labels for sums
 sums = []
 
-p1_sum_label = tk.Label(window, text = "Sum: 0", font = ("Garamond", 20))
-p2_sum_label = tk.Label(window, text = "Sum: 0", font = ("Garamond", 20))
-p3_sum_label = tk.Label(window, text = "Sum: 0", font = ("Garamond", 20))
-p4_sum_label = tk.Label(window, text = "Sum: 0", font = ("Garamond", 20))
-dealer_sum_label = tk.Label(window, text = "Sum: 0", font = ("Garamond", 20) )
-
-#add labels to list
-sums.append(p1_sum_label)
-sums.append(p2_sum_label)
-sums.append(p3_sum_label)
-sums.append(p4_sum_label)
-sums.append(dealer_sum_label)
+#create labels for each players' sum and put them into the sums array
+for i in range(num_players + 1):
+	sums.append(Label(window, text = "Sum: 0", font = ("Garamond", 20)))
 
 #place labels on grid, 1 extra for dealer
 for i in range(num_players + 1):
 	sums[i].grid(column = i, row = 2, padx = 15, pady = 10)
 
+###create labels for all card slots
 
+#load card back images and resize them (width, height)
+p1_cardBack = Image.open("./assets/cards/red_back.png").resize((99, 151), Image.ANTIALIAS)
+p2_cardBack = Image.open("./assets/cards/blue_back.png").resize((99, 151), Image.ANTIALIAS)
+p3_cardBack = Image.open("./assets/cards/yellow_back.png").resize((99, 151), Image.ANTIALIAS)
+p4_cardBack = Image.open("./assets/cards/green_back.png").resize((99, 151), Image.ANTIALIAS)
+d_cardBack = Image.open("./assets/cards/gray_back.png").resize((99, 151), Image.ANTIALIAS)
+
+#convert images to photoImage for use with labels
+p1_cardBack = ImageTk.PhotoImage(p1_cardBack)
+p2_cardBack = ImageTk.PhotoImage(p2_cardBack)
+p3_cardBack = ImageTk.PhotoImage(p3_cardBack)
+p4_cardBack = ImageTk.PhotoImage(p4_cardBack)
+d_cardBack = ImageTk.PhotoImage(d_cardBack)
+
+
+p1_cards = []
+#add a label for all five visible cards in hand and add them into p1's cards
+for i in range(5):
+	p1_cards.append(Label(window, image = p1_cardBack))
+
+#place labels on grid
+for i in range(len(p1_cards)):
+	#row 3+i will start at row 3 and go up for each additonal card
+	p1_cards[i].grid(column = 0, row = (3+i), padx = 15, pady = 5)
+
+p2_cards = []
+#add a label for all five visible cards in hand and add them into p2's cards
+for i in range(5):
+	p2_cards.append(Label(window, image = p2_cardBack))
+
+#place labels on grid
+for i in range(len(p2_cards)):
+	#row 3+i will start at row 3 and go up for each additonal card
+	p2_cards[i].grid(column = 1, row = (3+i), padx = 15, pady = 5)
+
+p3_cards = []
+#add a label for all five visible cards in hand and add them into p3's cards
+for i in range(5):
+	p3_cards.append(Label(window, image = p3_cardBack))
+
+#place labels on grid
+for i in range(len(p3_cards)):
+	#row 3+i will start at row 3 and go up for each additonal card
+	p3_cards[i].grid(column = 2, row = (3+i), padx = 15, pady = 5)
+
+p4_cards = []
+#add a label for all five visible cards in hand and add them into p4's cards
+for i in range(5):
+	p4_cards.append(Label(window, image = p4_cardBack))
+
+#place labels on grid
+for i in range(len(p4_cards)):
+	#row 3+i will start at row 3 and go up for each additonal card
+	p4_cards[i].grid(column = 3, row = (3+i), padx = 15, pady = 5)
+
+d_cards = []
+#add a label for all five visible cards in hand and add them into dealer's cards
+for i in range(5):
+	d_cards.append(Label(window, image = d_cardBack))
+
+#place labels on grid
+for i in range(len(p3_cards)):
+	#row 3+i will start at row 3 and go up for each additonal card
+	d_cards[i].grid(column = 4, row = (3+i), padx = 15, pady = 5)
+
+hands = [p1_cards, p2_cards, p3_cards, p4_cards, d_cards] #holds all hands 
 
 ###top info bar widgets
 
 #create bet amount label and place it on the grid
-bet_label = tk.Label(window, text = "Bet Amount:", font = ("Garamond", 16))
+bet_label = Label(window, text = "Bet Amount:", font = ("Garamond", 16))
 bet_label.grid(column = 0, row = 0, pady = 25)
 #create bet amount variable for use with spinbox
-bet_amount = tk.IntVar()
+bet_amount = IntVar()
 bet_amount.set(100)
 #create bet amount spinbox and place it on the grid
-bet_spin = tk.Spinbox(window, from_ = 0, to = 10000, width = 10, textvariable = bet_amount, font = ("Garamond", 16))
+bet_spin = Spinbox(window, from_ = 0, to = 10000, width = 10, textvariable = bet_amount, font = ("Garamond", 16))
 bet_spin.grid(column = 1, row = 0, pady = 25)
 
 #create net return label and place it on the grid
-net_return_label = tk.Label(window, text = "Net Return: $0", font = ("Garamond", 20))
+net_return_label = Label(window, text = "Net Return: $0", font = ("Garamond", 20))
 net_return_label.grid(column = 4, row  = 0, pady = 25)
 
 #create button for betting and place it on the grid
-bet_button = tk.Button(window, text = "Bet!", 
-	command = lambda: onBetPress(betAmount = bet_amount.get(), game = game, balance_labels = balances, net_return_label = net_return_label, sum_labels = sums), 
+bet_button = Button(window, text = "Bet!", 
+	command = lambda: onBetPress(bet_amount.get(), game, balances, net_return_label, sums, hands), 
 	font = ("Garamond", 16), activebackground = "green", width = 20)
 bet_button.grid(column = 2, row = 0, pady = 25, padx = 10)
 
 #create button to reset player balances and place it on the grid
-reset_balances_button = tk.Button(window, text = "Reset Balances",
+reset_balances_button = Button(window, text = "Reset Balances",
 	command = lambda: onResetPress(balance_labels = balances, net_return_label = net_return_label), font  = ("Garamond", 16),
 	activebackground = "red", width = 20)
 reset_balances_button.grid(column = 3, row = 0, pady = 25, padx = 10)
