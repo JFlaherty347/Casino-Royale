@@ -16,6 +16,7 @@ starting_balance = 5000
 num_players = 4
 player_balances = [starting_balance] * num_players	#money of each player
 player_states = np.zeros((num_players + 1, 9))			#current sums and cards of players AND dealer
+#win_tie_counts = np.zeros(4) #eval variable
 
 #uses same state format as blackjackEnv.py
 class multiHandBlackJack():
@@ -104,7 +105,7 @@ class multiHandBlackJack():
 	def onNextBet(self, betAmount):
 		#define globals
 		global player_balances
-		global player_states
+		global playerw_states
 
 		#get dealer score to check player hands against and put it into the player_states array
 		player_states[num_players] = self.getDealerState()
@@ -127,8 +128,11 @@ class multiHandBlackJack():
 			#check the sum (0th element) in each player state vs dealer's sum
 			if(player_states[i][0] > player_states[num_players][0]):
 				player_balances[i] += betAmount
+				#win_tie_counts[i] += 1 #for eval
 			elif(player_states[i][0] < player_states[num_players][0]):
 				player_balances[i] -= betAmount
+			#else:
+				#win_tie_counts[i] += 1 #for eval
 			#otherwise, hand is a push
 
 '''
@@ -148,6 +152,10 @@ for i in range(num_players):
 def onBetPress(betAmount, game, balance_labels, net_return_label, sum_labels, hand_labels):
 	#conduct next hand
 	game.onNextBet(betAmount)
+
+	#eval success rates
+	#for count in win_tie_counts:
+	#	print("\n()()()()()()()()()()()COUNT: " + str(count))
 
 	#update balance labels
 	for i in range(num_players):
@@ -213,159 +221,164 @@ def getCardImagePath(value, player):
 		card_path += back_colors[player] + "_back"
 	elif(value == 1 or value == 11):	#check if ace(listed as 1 or 11)
 		card_path += "A" + getRandomSuit()
+	elif(value == 10):					#check if some value of 10
+		ten_cards = ["J", "Q", "K", "10"] #all cards with value of 10
+		card_path += ten_cards[np.random.randint(0,4)] + getRandomSuit()
 	else:								#normal card
 		card_path += str(int(value)) + getRandomSuit()
 
 	return card_path + ".png"
 
 def getRandomSuit():
-	suits = ["C", "D", "H", "S"]
+	suits = ["C", "D", "H", "S"]	#clubs/diamonds/hearts/spades
 	return suits[np.random.randint(0, 4)]
 
 ###window creation
+def createBlackjackWindow():
+	#create game class
+	game = multiHandBlackJack()
 
-#create game class
-game = multiHandBlackJack()
+	#create a window, title it, and set size
+	window = Tk()
+	window.title("Blackjack")
+	window.geometry('1700x900')
 
-#create a window, title it, and set size
-window = Tk()
-window.title("Blackjack")
-window.geometry('1700x900')
+	#get icon file
+	icon = PhotoImage(file = "./assets/blackjackicon.png")
 
-#get icon file
-icon = PhotoImage(file = "./assets/blackjackicon.png")
+	#set icon of window
+	window.iconphoto(False, icon)
 
-#set icon of window
-window.iconphoto(False, icon)
+	#widget creation
 
-#widget creation
+	###column label widets
 
-###column label widets
+	#add labels for balances
+	balances = []
 
-#add labels for balances
-balances = []
+	#create labels for balance of each player and put them into the balances array
+	for i in range(num_players):
+		balances.append(Label(window, text = "P" + str(i+1) +" Balance: $" + str(player_balances[0]), font = ("Garamond", 20)))
 
-#create labels for balance of each player and put them into the balances array
-for i in range(num_players):
-	balances.append(Label(window, text = "P" + str(i+1) +" Balance: $" + str(player_balances[0]), font = ("Garamond", 20)))
+	#place labels on grid
+	for i in range(num_players):
+		balances[i].grid(column = i, row = 1, padx = 15, pady = 10)
 
-#place labels on grid
-for i in range(num_players):
-	balances[i].grid(column = i, row = 1, padx = 15, pady = 10)
+	#create label to mark dealer's column and place it on the grid
+	dealer_label = Label(window, text = "Dealer", font = ("Garamond", 20))
+	dealer_label.grid(column = 4, row = 1, padx = 15, pady = 10)
 
-#create label to mark dealer's column and place it on the grid
-dealer_label = Label(window, text = "Dealer", font = ("Garamond", 20))
-dealer_label.grid(column = 4, row = 1, padx = 15, pady = 10)
+	###hand visualization
 
-###hand visualization
+	#add labels for sums
+	sums = []
 
-#add labels for sums
-sums = []
+	#create labels for each players' sum and put them into the sums array
+	for i in range(num_players + 1):
+		sums.append(Label(window, text = "Sum: 0", font = ("Garamond", 20)))
 
-#create labels for each players' sum and put them into the sums array
-for i in range(num_players + 1):
-	sums.append(Label(window, text = "Sum: 0", font = ("Garamond", 20)))
+	#place labels on grid, 1 extra for dealer
+	for i in range(num_players + 1):
+		sums[i].grid(column = i, row = 2, padx = 15, pady = 10)
 
-#place labels on grid, 1 extra for dealer
-for i in range(num_players + 1):
-	sums[i].grid(column = i, row = 2, padx = 15, pady = 10)
+	###create labels for all card slots
 
-###create labels for all card slots
+	#load card back images and resize them (width, height)
+	p1_cardBack = Image.open("./assets/cards/red_back.png").resize((99, 151), Image.ANTIALIAS)
+	p2_cardBack = Image.open("./assets/cards/blue_back.png").resize((99, 151), Image.ANTIALIAS)
+	p3_cardBack = Image.open("./assets/cards/yellow_back.png").resize((99, 151), Image.ANTIALIAS)
+	p4_cardBack = Image.open("./assets/cards/green_back.png").resize((99, 151), Image.ANTIALIAS)
+	d_cardBack = Image.open("./assets/cards/gray_back.png").resize((99, 151), Image.ANTIALIAS)
 
-#load card back images and resize them (width, height)
-p1_cardBack = Image.open("./assets/cards/red_back.png").resize((99, 151), Image.ANTIALIAS)
-p2_cardBack = Image.open("./assets/cards/blue_back.png").resize((99, 151), Image.ANTIALIAS)
-p3_cardBack = Image.open("./assets/cards/yellow_back.png").resize((99, 151), Image.ANTIALIAS)
-p4_cardBack = Image.open("./assets/cards/green_back.png").resize((99, 151), Image.ANTIALIAS)
-d_cardBack = Image.open("./assets/cards/gray_back.png").resize((99, 151), Image.ANTIALIAS)
-
-#convert images to photoImage for use with labels
-p1_cardBack = ImageTk.PhotoImage(p1_cardBack)
-p2_cardBack = ImageTk.PhotoImage(p2_cardBack)
-p3_cardBack = ImageTk.PhotoImage(p3_cardBack)
-p4_cardBack = ImageTk.PhotoImage(p4_cardBack)
-d_cardBack = ImageTk.PhotoImage(d_cardBack)
+	#convert images to photoImage for use with labels
+	p1_cardBack = ImageTk.PhotoImage(p1_cardBack)
+	p2_cardBack = ImageTk.PhotoImage(p2_cardBack)
+	p3_cardBack = ImageTk.PhotoImage(p3_cardBack)
+	p4_cardBack = ImageTk.PhotoImage(p4_cardBack)
+	d_cardBack = ImageTk.PhotoImage(d_cardBack)
 
 
-p1_cards = []
-#add a label for all five visible cards in hand and add them into p1's cards
-for i in range(5):
-	p1_cards.append(Label(window, image = p1_cardBack))
+	p1_cards = []
+	#add a label for all five visible cards in hand and add them into p1's cards
+	for i in range(5):
+		p1_cards.append(Label(window, image = p1_cardBack))
 
-#place labels on grid
-for i in range(len(p1_cards)):
-	#row 3+i will start at row 3 and go up for each additonal card
-	p1_cards[i].grid(column = 0, row = (3+i), padx = 15, pady = 5)
+	#place labels on grid
+	for i in range(len(p1_cards)):
+		#row 3+i will start at row 3 and go up for each additonal card
+		p1_cards[i].grid(column = 0, row = (3+i), padx = 15, pady = 5)
 
-p2_cards = []
-#add a label for all five visible cards in hand and add them into p2's cards
-for i in range(5):
-	p2_cards.append(Label(window, image = p2_cardBack))
+	p2_cards = []
+	#add a label for all five visible cards in hand and add them into p2's cards
+	for i in range(5):
+		p2_cards.append(Label(window, image = p2_cardBack))
 
-#place labels on grid
-for i in range(len(p2_cards)):
-	#row 3+i will start at row 3 and go up for each additonal card
-	p2_cards[i].grid(column = 1, row = (3+i), padx = 15, pady = 5)
+	#place labels on grid
+	for i in range(len(p2_cards)):
+		#row 3+i will start at row 3 and go up for each additonal card
+		p2_cards[i].grid(column = 1, row = (3+i), padx = 15, pady = 5)
 
-p3_cards = []
-#add a label for all five visible cards in hand and add them into p3's cards
-for i in range(5):
-	p3_cards.append(Label(window, image = p3_cardBack))
+	p3_cards = []
+	#add a label for all five visible cards in hand and add them into p3's cards
+	for i in range(5):
+		p3_cards.append(Label(window, image = p3_cardBack))
 
-#place labels on grid
-for i in range(len(p3_cards)):
-	#row 3+i will start at row 3 and go up for each additonal card
-	p3_cards[i].grid(column = 2, row = (3+i), padx = 15, pady = 5)
+	#place labels on grid
+	for i in range(len(p3_cards)):
+		#row 3+i will start at row 3 and go up for each additonal card
+		p3_cards[i].grid(column = 2, row = (3+i), padx = 15, pady = 5)
 
-p4_cards = []
-#add a label for all five visible cards in hand and add them into p4's cards
-for i in range(5):
-	p4_cards.append(Label(window, image = p4_cardBack))
+	p4_cards = []
+	#add a label for all five visible cards in hand and add them into p4's cards
+	for i in range(5):
+		p4_cards.append(Label(window, image = p4_cardBack))
 
-#place labels on grid
-for i in range(len(p4_cards)):
-	#row 3+i will start at row 3 and go up for each additonal card
-	p4_cards[i].grid(column = 3, row = (3+i), padx = 15, pady = 5)
+	#place labels on grid
+	for i in range(len(p4_cards)):
+		#row 3+i will start at row 3 and go up for each additonal card
+		p4_cards[i].grid(column = 3, row = (3+i), padx = 15, pady = 5)
 
-d_cards = []
-#add a label for all five visible cards in hand and add them into dealer's cards
-for i in range(5):
-	d_cards.append(Label(window, image = d_cardBack))
+	d_cards = []
+	#add a label for all five visible cards in hand and add them into dealer's cards
+	for i in range(5):
+		d_cards.append(Label(window, image = d_cardBack))
 
-#place labels on grid
-for i in range(len(p3_cards)):
-	#row 3+i will start at row 3 and go up for each additonal card
-	d_cards[i].grid(column = 4, row = (3+i), padx = 15, pady = 5)
+	#place labels on grid
+	for i in range(len(p3_cards)):
+		#row 3+i will start at row 3 and go up for each additonal card
+		d_cards[i].grid(column = 4, row = (3+i), padx = 15, pady = 5)
 
-hands = [p1_cards, p2_cards, p3_cards, p4_cards, d_cards] #holds all hands 
+	hands = [p1_cards, p2_cards, p3_cards, p4_cards, d_cards] #holds all hands 
 
-###top info bar widgets
+	###top info bar widgets
 
-#create bet amount label and place it on the grid
-bet_label = Label(window, text = "Bet Amount:", font = ("Garamond", 16))
-bet_label.grid(column = 0, row = 0, pady = 25)
-#create bet amount variable for use with spinbox
-bet_amount = IntVar()
-bet_amount.set(100)
-#create bet amount spinbox and place it on the grid
-bet_spin = Spinbox(window, from_ = 0, to = 10000, width = 10, textvariable = bet_amount, font = ("Garamond", 16))
-bet_spin.grid(column = 1, row = 0, pady = 25)
+	#create bet amount label and place it on the grid
+	bet_label = Label(window, text = "Bet Amount:", font = ("Garamond", 16))
+	bet_label.grid(column = 0, row = 0, pady = 25)
+	#create bet amount variable for use with spinbox
+	bet_amount = IntVar()
+	bet_amount.set(100)
+	#create bet amount spinbox and place it on the grid
+	bet_spin = Spinbox(window, from_ = 0, to = 10000, width = 10, textvariable = bet_amount, font = ("Garamond", 16))
+	bet_spin.grid(column = 1, row = 0, pady = 25)
 
-#create net return label and place it on the grid
-net_return_label = Label(window, text = "Net Return: $0", font = ("Garamond", 20))
-net_return_label.grid(column = 4, row  = 0, pady = 25)
+	#create net return label and place it on the grid
+	net_return_label = Label(window, text = "Net Return: $0", font = ("Garamond", 20))
+	net_return_label.grid(column = 4, row  = 0, pady = 25)
 
-#create button for betting and place it on the grid
-bet_button = Button(window, text = "Bet!", 
-	command = lambda: onBetPress(bet_amount.get(), game, balances, net_return_label, sums, hands), 
-	font = ("Garamond", 16), activebackground = "green", width = 20)
-bet_button.grid(column = 2, row = 0, pady = 25, padx = 10)
+	#create button for betting and place it on the grid
+	bet_button = Button(window, text = "Bet!", 
+		command = lambda: onBetPress(bet_amount.get(), game, balances, net_return_label, sums, hands), 
+		font = ("Garamond", 16), activebackground = "green", width = 20)
+	bet_button.grid(column = 2, row = 0, pady = 25, padx = 10)
 
-#create button to reset player balances and place it on the grid
-reset_balances_button = Button(window, text = "Reset Balances",
-	command = lambda: onResetPress(balance_labels = balances, net_return_label = net_return_label), font  = ("Garamond", 16),
-	activebackground = "red", width = 20)
-reset_balances_button.grid(column = 3, row = 0, pady = 25, padx = 10)
+	#create button to reset player balances and place it on the grid
+	reset_balances_button = Button(window, text = "Reset Balances",
+		command = lambda: onResetPress(balance_labels = balances, net_return_label = net_return_label), font  = ("Garamond", 16),
+		activebackground = "red", width = 20)
+	reset_balances_button.grid(column = 3, row = 0, pady = 25, padx = 10)
 
-###start window
-window.mainloop()
+	###start window
+	window.mainloop()
+
+createBlackjackWindow()

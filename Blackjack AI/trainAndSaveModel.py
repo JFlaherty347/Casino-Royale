@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import blackjackEnvironment as benv
+import blackjackEnvironmentDealer as benvd
 import matplotlib
 import matplotlib.pyplot as plt
 import time
@@ -31,21 +32,21 @@ class TrainAndSaveModel(network.Network):
     #
     #HYPERPARAMETERS
     #
-    num_iterations = 25000 #number of batches in an epoch(a single passthrough of a dataset)
+    num_iterations = 200000 #number of batches in an epoch(a single passthrough of a dataset)
     #
     initial_collect_steps = 2000
     collect_steps_per_iteration = 1
-    replay_buffer_capacity = 200000
+    replay_buffer_capacity = 250000
     #
-    batch_size = 85 #number of training examples before updating model
-    learning_rate  = 0.0036 #a measure of how resistant a model is to change (important)
+    batch_size = 90 #number of training examples before updating model
+    learning_rate  = 0.0008#a measure of how resistant a model is to change (important)
     log_interval = 500 #for printing progress during training
     #
     num_eval_episodes = 15
     eval_interval = 1000 #for deciding when to add a data point of progress
     #
-    epsilon = 0.04 #probability of choosing a random action to avoid over/under fitting of model
-    gamma = .95 #dicount factor for future rewards
+    epsilon = 0.05 #probability of choosing a random action to avoid over/under fitting of model
+    gamma = 1.0 #dicount factor for future rewards
     name = "BlackjackSavant"
     #END OF HYPERPARAMETERS
 
@@ -96,7 +97,7 @@ class TrainAndSaveModel(network.Network):
     start_time = time.time()
 
     #initialize environment and wrap it in tf environment
-    env = benv.BlackjackEnv()
+    env = benv.BlackjackEnv() 
     tf_env = tf_py_environment.TFPyEnvironment(env)
 
     #initialize network environment
@@ -180,8 +181,8 @@ class TrainAndSaveModel(network.Network):
 
     #save the trained agent in the saved_model format for later use
     policy_saver = policy_saver.PolicySaver(agent.policy, batch_size = None)
-    policy_saver.save('policy')
-    tf.saved_model.save(agent, "./")
+    policy_saver.save('./models/policy')
+    tf.saved_model.save(agent, "./models/")
 
 
     #produce graph of training process
