@@ -208,6 +208,9 @@ def updateHands(sum_labels, hand_labels):
 			hand_labels[i][j-1].config(image = new_card_image)
 			hand_labels[i][j-1].image = new_card_image
 
+
+			
+
 def getCardImagePath(value, player):
 	#cards are name as [value](face)
 	card_path = "./assets/cards/"
@@ -231,20 +234,20 @@ def getRandomSuit():
 	return suits[np.random.randint(0, 4)]
 
 ###window creation
-def createBlackjackWindow(root):
+def createBlackjackWindow():
 	#create game class
 	game = multiHandBlackJack()
 
 	#create a window, title it, and set size
-	window = Toplevel(root)
-	#window.title("Blackjack")
-	#window.geometry('1700x900')
+	window = Tk()
+	window.title("Blackjack")
+	window.geometry('1700x900')
 
 	#get icon file
-	#icon = PhotoImage(file = "./assets/blackjackicon.png")
+	icon = PhotoImage(file = "./assets/blackjackicon.png")
 
 	#set icon of window
-	#window.iconphoto(False, icon)
+	window.iconphoto(False, icon)
 
 	#widget creation
 
@@ -375,8 +378,7 @@ def createBlackjackWindow(root):
 		activebackground = "red", width = 20)
 	reset_balances_button.grid(column = 3, row = 0, pady = 25, padx = 10)
 
+	###start window
+	window.mainloop()
 
-root = Tk()
-createBlackjackWindow(root)
-###start window
-root.mainloop()
+createBlackjackWindow()
