@@ -24,7 +24,7 @@ class multiHandBlackJack():
 	#prepares game to be played
 	def __init__(self):
 		#load trained agent from disk
-		self.policy = tf.saved_model.load("./models/policy")
+		self.policy = tf.saved_model.load("../Blackjack_AI/models/policy")
 
 		self.env = benv.BlackjackEnv()
 		self.tf_env = tf_py_environment.TFPyEnvironment(self.env)
@@ -210,7 +210,7 @@ def updateHands(sum_labels, hand_labels):
 
 def getCardImagePath(value, player):
 	#cards are name as [value](face)
-	card_path = "./assets/cards/"
+	card_path = "../Blackjack_AI/assets/cards/"
 	suit = getRandomSuit()
 
 	if(value == 0):						#check if empty card
@@ -241,7 +241,7 @@ def createBlackjackWindow(root):
 	#window.geometry('1700x900')
 
 	#get icon file
-	#icon = PhotoImage(file = "./assets/blackjackicon.png")
+	#icon = PhotoImage(file = "../Blackjack_AI/assets/blackjackicon.png")
 
 	#set icon of window
 	#window.iconphoto(False, icon)
@@ -281,11 +281,11 @@ def createBlackjackWindow(root):
 	###create labels for all card slots
 
 	#load card back images and resize them (width, height)
-	p1_cardBack = Image.open("./assets/cards/red_back.png").resize((99, 151), Image.ANTIALIAS)
-	p2_cardBack = Image.open("./assets/cards/blue_back.png").resize((99, 151), Image.ANTIALIAS)
-	p3_cardBack = Image.open("./assets/cards/yellow_back.png").resize((99, 151), Image.ANTIALIAS)
-	p4_cardBack = Image.open("./assets/cards/green_back.png").resize((99, 151), Image.ANTIALIAS)
-	d_cardBack = Image.open("./assets/cards/gray_back.png").resize((99, 151), Image.ANTIALIAS)
+	p1_cardBack = Image.open("../Blackjack_AI/assets/cards/red_back.png").resize((99, 151), Image.ANTIALIAS)
+	p2_cardBack = Image.open("../Blackjack_AI/assets/cards/blue_back.png").resize((99, 151), Image.ANTIALIAS)
+	p3_cardBack = Image.open("../Blackjack_AI/assets/cards/yellow_back.png").resize((99, 151), Image.ANTIALIAS)
+	p4_cardBack = Image.open("../Blackjack_AI/assets/cards/green_back.png").resize((99, 151), Image.ANTIALIAS)
+	d_cardBack = Image.open("../Blackjack_AI/assets/cards/gray_back.png").resize((99, 151), Image.ANTIALIAS)
 
 	#convert images to photoImage for use with labels
 	p1_cardBack = ImageTk.PhotoImage(p1_cardBack)
@@ -376,7 +376,7 @@ def createBlackjackWindow(root):
 	reset_balances_button.grid(column = 3, row = 0, pady = 25, padx = 10)
 
 
-root = Tk()
-createBlackjackWindow(root)
+#root = Tk()
+#createBlackjackWindow(root)
 ###start window
-root.mainloop()
+#root.mainloop()

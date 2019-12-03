@@ -4,11 +4,11 @@ import sys, os
 #os.chdir(cwd+"/Horse Race/")
 
 print(os.getcwd())
-sys.path.insert(1, "./Horse_Race/")
+sys.path.insert(1, "../Horse_Race/")
 import horse_race_module_prev
 
 #os.chdir(cwd+"/Blackjack AI/")
-sys.path.insert(1, "./Blackjack_AI/")
+sys.path.insert(1, "../Blackjack_AI/")
 import multiHandBlackjack
 
 #os.chdir(cwd)
