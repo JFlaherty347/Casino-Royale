@@ -25,4 +25,5 @@ In its current state, the agent is able to achieve ~44% win/tie rate against a s
 
 ## Accreditations
 Joseph Flaherty - Blackjack AI, Blackjack GUI
+
 Aaron Jimenez - Horse racing simulator, Horse racing GUI, Main menu GUI, Music functionality
