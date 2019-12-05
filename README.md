@@ -5,7 +5,7 @@ plays multiple hands at once and a horce race simulator.
 
 ## Blackjack AI Model
 The blackjack AI uses a [DDQN](https://en.wikipedia.org/wiki/Q-learning), as described [in this paper](https://arxiv.org/abs/1509.06461), in order to achieve success playing
-blackjack. It was created using [Tensorflow 2.0](https://www.tensorflow.org/) and [TF Agents](https://github.com/tensorflow/agents). 
+blackjack. It was created using [Tensorflow 2.0](https://www.tensorflow.org/) and [TF Agents](https://github.com/tensorflow/agents). Although probabilistic approximations would likely outperform reinforcement learning, this AI was created to see how an agent would react and adapt to random elements, a staple in casino games.
 
 ## Blackjack AI Training
 The training process involved 200,000 iterations, rewarding the agent as follows: 
@@ -35,6 +35,17 @@ Player 4: 44164/100000
 Average: 44083/100000
 
 Win/Tie Rate: 44.083%
+```
+This reward simple reward model saw slightly better result than scaling reward based on tiers of the sum, as seen below:
+
+```
+Player 1: 44006/100000
+Player 2: 43584/100000
+Player 3: 43238/100000
+Player 4: 43452/100000
+Average: 43570/100000
+
+Win/Tie Rate: 43.57%
 ```
 
 ## Accreditations
