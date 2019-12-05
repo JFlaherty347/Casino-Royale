@@ -36,7 +36,7 @@ Average: 44083/100000
 
 Win/Tie Rate: 44.083%
 ```
-This reward simple reward model saw slightly better result than scaling reward based on tiers of the sum, as seen below:
+Adding additional negative reward for a score under a 11 results in a slight decrease in winrate as seen below:
 
 ```
 Player 1: 44006/100000
@@ -47,6 +47,8 @@ Average: 43570/100000
 
 Win/Tie Rate: 43.57%
 ```
+
+However, the behavior of this second agent is more consistent, and the first agent's tendency to stand on lower scores may have been reliant on the dealer busting.
 
 ## Accreditations
 Joseph Flaherty - Blackjack AI, Blackjack GUI
