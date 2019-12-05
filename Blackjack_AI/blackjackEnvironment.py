@@ -97,8 +97,12 @@ class BlackjackEnv(py_environment.PyEnvironment):
 
         #if game is over, grant rewards, otherwise just transition
         if (self._episode_ended or self._state[0] >= 21):
-            #score - 21 is reward value, if bust, -21
+            #score - 21 is reward value, if bust, -21. If sum is <11
             resultReward = self._state[0] - 21 if self._state[0] <= 21 else -21
+
+            if(self._state[0] <= 11): #less than 12 (could have safely hit, so this is bad) 
+                resultReward = -100
+
             return ts.termination(np.array([self._state], dtype=np.int32), resultReward)
         else:
             return ts.transition(np.array([self._state], dtype=np.int32), reward = 0.0, discount = 1.0)

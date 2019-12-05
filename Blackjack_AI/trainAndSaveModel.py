@@ -1,3 +1,6 @@
+'''
+This class holds the training loop and outputs a saved model and policy for later use.
+'''
 import tensorflow as tf
 import numpy as np
 import blackjackEnvironment as benv
@@ -34,18 +37,18 @@ class TrainAndSaveModel(network.Network):
     #
     num_iterations = 200000 #number of batches in an epoch(a single passthrough of a dataset)
     #
-    initial_collect_steps = 2000
+    initial_collect_steps = 1500
     collect_steps_per_iteration = 1
     replay_buffer_capacity = 250000
     #
-    batch_size = 90 #number of training examples before updating model
-    learning_rate  = 0.0008#a measure of how resistant a model is to change (important)
+    batch_size = 100 #number of training examples before updating model
+    learning_rate  = 0.000075 #a measure of how resistant a model is to change (important)
     log_interval = 500 #for printing progress during training
     #
     num_eval_episodes = 15
     eval_interval = 1000 #for deciding when to add a data point of progress
     #
-    epsilon = 0.05 #probability of choosing a random action to avoid over/under fitting of model
+    epsilon = 0.07 #probability of choosing a random action to avoid over/under fitting of model
     gamma = 1.0 #dicount factor for future rewards
     name = "BlackjackSavant"
     #END OF HYPERPARAMETERS
@@ -154,7 +157,7 @@ class TrainAndSaveModel(network.Network):
     returns = [avg] #holds average returns from multiple points during training
 
     #main training loop
-    for _ in range(num_iterations):
+    for i in range(num_iterations):
         
         collect_data(tf_env, agent.collect_policy, replay_buffer, collect_steps_per_iteration)
 
@@ -173,6 +176,9 @@ class TrainAndSaveModel(network.Network):
             avg = avg_return(tf_env, agent.policy, num_eval_episodes)
             print('step = {0}: Average retrun = {1}'.format(step, avg))
             returns.append(avg)
+            if(avg > -5):
+                saver = policy_saver.PolicySaver(agent.policy, batch_size = None)
+                saver.save('./models/policy' + str(i) + "$" + str(avg))
 
     #results
 
@@ -180,8 +186,8 @@ class TrainAndSaveModel(network.Network):
     print("<><><>runtime: %s seconds<><><>" %(time.time() - start_time))
 
     #save the trained agent in the saved_model format for later use
-    policy_saver = policy_saver.PolicySaver(agent.policy, batch_size = None)
-    policy_saver.save('./models/policy')
+    saver = policy_saver.PolicySaver(agent.policy, batch_size = None)
+    saver.save('./models/policyF')
     tf.saved_model.save(agent, "./models/")
 
 
@@ -190,6 +196,5 @@ class TrainAndSaveModel(network.Network):
     plt.plot(iterations, returns)
     plt.ylabel('Average Return')
     plt.xlabel('Iteration')
-    plt.ylim(top = 0)
     plt.title('Average Return Over Time')
     plt.show()
