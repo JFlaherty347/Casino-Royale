@@ -17,6 +17,17 @@ The process was accelerated through using Tensorflow-GPU, allowing more massive 
 
 ![Graph of Training](https://github.com/JFlaherty347/Casino-Royale/blob/master/Blackjack_AI/graphs/DDQN-FINAL-200k.png)
 
+An updated version of the training process was created with the following reward:
+```
+-50,        if sum <= 11
+-21 + sum,  if 11 < sum <= 21
+-21,        if sum >21
+```
+
+Which trained with the following average return:
+
+![Graph of Training 2](https://github.com/JFlaherty347/Casino-Royale/blob/master/Blackjack_AI/graphs/LessSevereAntiLow.png)
+
 ## Application of Agent
 The agent was applied in an application where it's policy is used to make decisions in a hand of blackjack visible to the user. The game state is shown through a GUI and also keeps track of running balances of players.
 
