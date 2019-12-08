@@ -1,6 +1,6 @@
 '''
-This class is the actual application of the blackjack agent which uses multithreading to emulate
-multiple hands of blackjack. This also takes care of the GUI.
+slight modificatino that uses multiHandBlackjack.py as a skeleton for running 100000
+games of blackjack for each player to evaluate the effectiveness of the model. 
 '''
 import tensorflow as tf
 import threading
@@ -20,7 +20,7 @@ starting_balance = 5000
 num_players = 4
 player_balances = [starting_balance] * num_players	#money of each player
 player_states = np.zeros((num_players + 1, 9))			#current sums and cards of players AND dealer
-#win_tie_counts = np.zeros(4) #eval variable
+win_tie_counts = np.zeros(4) #eval variable
 
 #uses same state format as blackjackEnv.py
 class multiHandBlackJack():
@@ -28,7 +28,7 @@ class multiHandBlackJack():
 	#prepares game to be played
 	def __init__(self):
 		#load trained agent from disk
-		self.policy = tf.saved_model.load("../Blackjack_AI/models/policy")
+		self.policy = tf.saved_model.load("./models/policy")
 
 		self.env = benv.BlackjackEnv()
 		self.tf_env = tf_py_environment.TFPyEnvironment(self.env)
@@ -132,11 +132,11 @@ class multiHandBlackJack():
 			#check the sum (0th element) in each player state vs dealer's sum
 			if(player_states[i][0] > player_states[num_players][0]):
 				player_balances[i] += betAmount
-				#win_tie_counts[i] += 1 #for eval
+				win_tie_counts[i] += 1 #for eval
 			elif(player_states[i][0] < player_states[num_players][0]):
 				player_balances[i] -= betAmount
-			#else:
-				#win_tie_counts[i] += 1 #for eval
+			else:
+				win_tie_counts[i] += 1 #for eval
 			#otherwise, hand is a push
 
 '''
@@ -155,11 +155,14 @@ for i in range(num_players):
 #button methods
 def onBetPress(betAmount, game, balance_labels, net_return_label, sum_labels, hand_labels):
 	#conduct next hand
-	game.onNextBet(betAmount)
+	for i in range(100000):
+		game.onNextBet(betAmount)
+		if(i % 1000 == 0):
+			print("\nTime: " + str(i))
 
 	#eval success rates
-	#for count in win_tie_counts:
-	#	print("\n()()()()()()()()()()()COUNT: " + str(count))
+	for count in win_tie_counts:
+		print("\n()()()()()()()()()()()COUNT: " + str(count))
 
 	#update balance labels
 	for i in range(num_players):
@@ -212,9 +215,12 @@ def updateHands(sum_labels, hand_labels):
 			hand_labels[i][j-1].config(image = new_card_image)
 			hand_labels[i][j-1].image = new_card_image
 
+
+			
+
 def getCardImagePath(value, player):
 	#cards are name as [value](face)
-	card_path = "../Blackjack_AI/assets/cards/"
+	card_path = "./assets/cards/"
 	suit = getRandomSuit()
 
 	if(value == 0):						#check if empty card
@@ -235,20 +241,20 @@ def getRandomSuit():
 	return suits[np.random.randint(0, 4)]
 
 ###window creation
-def createBlackjackWindow(root):
+def createBlackjackWindow():
 	#create game class
 	game = multiHandBlackJack()
 
 	#create a window, title it, and set size
-	window = Toplevel(root)
-	#window.title("Blackjack")
-	#window.geometry('1700x900')
+	window = Tk()
+	window.title("Blackjack")
+	window.geometry('1700x900')
 
 	#get icon file
-	#icon = PhotoImage(file = "../Blackjack_AI/assets/blackjackicon.png")
+	icon = PhotoImage(file = "./assets/blackjackicon.png")
 
 	#set icon of window
-	#window.iconphoto(False, icon)
+	window.iconphoto(False, icon)
 
 	#widget creation
 
@@ -285,11 +291,11 @@ def createBlackjackWindow(root):
 	###create labels for all card slots
 
 	#load card back images and resize them (width, height)
-	p1_cardBack = Image.open("../Blackjack_AI/assets/cards/red_back.png").resize((99, 151), Image.ANTIALIAS)
-	p2_cardBack = Image.open("../Blackjack_AI/assets/cards/blue_back.png").resize((99, 151), Image.ANTIALIAS)
-	p3_cardBack = Image.open("../Blackjack_AI/assets/cards/yellow_back.png").resize((99, 151), Image.ANTIALIAS)
-	p4_cardBack = Image.open("../Blackjack_AI/assets/cards/green_back.png").resize((99, 151), Image.ANTIALIAS)
-	d_cardBack = Image.open("../Blackjack_AI/assets/cards/gray_back.png").resize((99, 151), Image.ANTIALIAS)
+	p1_cardBack = Image.open("./assets/cards/red_back.png").resize((99, 151), Image.ANTIALIAS)
+	p2_cardBack = Image.open("./assets/cards/blue_back.png").resize((99, 151), Image.ANTIALIAS)
+	p3_cardBack = Image.open("./assets/cards/yellow_back.png").resize((99, 151), Image.ANTIALIAS)
+	p4_cardBack = Image.open("./assets/cards/green_back.png").resize((99, 151), Image.ANTIALIAS)
+	d_cardBack = Image.open("./assets/cards/gray_back.png").resize((99, 151), Image.ANTIALIAS)
 
 	#convert images to photoImage for use with labels
 	p1_cardBack = ImageTk.PhotoImage(p1_cardBack)
@@ -379,8 +385,7 @@ def createBlackjackWindow(root):
 		activebackground = "red", width = 20)
 	reset_balances_button.grid(column = 3, row = 0, pady = 25, padx = 10)
 
+	###start window
+	window.mainloop()
 
-#root = Tk()
-#createBlackjackWindow(root)
-###start window
-#root.mainloop()
+createBlackjackWindow()
