@@ -1,8 +1,17 @@
-""" Created referencing google's tensorflow agents github page
-    In order to allow for Reinforcement Learning there must be an environment that represents that task that the agent is intended to learn
-    see the following pages for more info on RL:
-        -Wikipedia's Pages on RL, Q-Learning, DRL
-        -Google's tf-agents tutorials on their github
+""" 
+Author: Joseph Flaherty
+Date: Dec 8, 2019
+
+This environment represents the game of blackjack that the AI is acting in.
+
+Methods:
+__init__() - creates a new environment and initializes the array shape of actions and observations
+action_spec() - returns the array_spec of the action
+observation_spec() - returns the array_spec of the observation 
+step() - Agent takes an action and the environment updates
+drawNewCard() - helper method to randomly draw a cards with accurate odds
+
+Created referencing google's tensorflow agents github page
     Glossary of RL terms:
         Agent-The AI itself
         Environment- The task that the AI is solving(Everything that exists)
