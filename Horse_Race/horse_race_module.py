@@ -1,3 +1,7 @@
+#Author: Aaron Jimenez
+#Date: Dec 08, 2019
+#Runs horse race simulation using multithreading and GUI using the tkinter library
+
 import threading
 import random
 import time
