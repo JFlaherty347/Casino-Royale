@@ -17,6 +17,7 @@ playAgain = True
 numberOfGamblers = 5
 maxHorses = 5
 
+#Class that creates and runs each horse race thread, child of threading.Thread class
 class horseRaceThread(threading.Thread):
     def __init__(self, name, horse):
         threading.Thread.__init__(self)
@@ -59,7 +60,8 @@ class horseRaceThread(threading.Thread):
         self.horse.printHorse()
         lock.release()
 
-
+#Class that creates each horse
+#Contains the horse's ID number, their max speed, and at what time they finished
 class horse():
     def __init__(self, horseNumber, maxSpeed):
         self.horseNumber = horseNumber
@@ -72,7 +74,8 @@ class horse():
     def setFinish(self, timeFinish):
         self.finishTime = timeFinish
 
-
+#Class that creates each gambler
+#Contains their name, gambler ID number, their current amount of money, and which horse they are currently betting on
 class gambler():
     def __init__(self, gamblerName, maxHorses, currentAmountOfMoney):
         self.gamblerName = gamblerName
@@ -148,11 +151,6 @@ def horseRun():
     receipt_print = lambda : printReciept(gamblers)
     fileMenu.add_command(label = "Print Reciept", command = receipt_print)
     fileMenu.add_command(label = "Quit", command = window.destroy)
-    #print_receipt_frame = tkinter.Frame(window)
-    #print_receipt_frame.pack(side = tkinter.BOTTOM)
-    #print_receipt_button = tkinter.Button(print_receipt_frame, text = 'Print Receipt', command = receipt_print)
-    #print_receipt_button.pack(padx = 50)
-
 
 
     
@@ -232,8 +230,6 @@ def step(gamblers, window, horse_progress_bar, dialogue_listbox):
 
 
     # print which horse won
-    # global finishedHorses
-    #print("\nWinner: Horse %d\n" % finishedHorses[0].horseNumber)
     dialogue_listbox.insert(tkinter.END, "")
     dialogue_listbox.insert(tkinter.END, ("Winner: Horse %d" % finishedHorses[0].horseNumber))
     dialogue_listbox.insert(tkinter.END, "")
