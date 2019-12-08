@@ -157,17 +157,6 @@ class multiHandBlackJack():
 				win_tie_counts[i] += 1 #for eval
 			#otherwise, hand is a push
 
-'''
-#test
-print("Ok starting...")
-game = multiHandBlackJack()
-game.onNextBet(100)
-
-print("\nResults...")
-for i in range(num_players):
-	print("\nBalance of Player " + str(i) + ": " + str(player_balances[i]))
-'''
-
 ### GUI methods 
 
 #button methods
@@ -232,9 +221,7 @@ def updateHands(sum_labels, hand_labels):
 			#update label with new card image
 			hand_labels[i][j-1].config(image = new_card_image)
 			hand_labels[i][j-1].image = new_card_image
-
-
-			
+		
 
 def getCardImagePath(value, player):
 	#cards are name as [value](face)

@@ -39,7 +39,6 @@ starting_balance = 5000
 num_players = 4
 player_balances = [starting_balance] * num_players	#money of each player
 player_states = np.zeros((num_players + 1, 9))			#current sums and cards of players AND dealer
-#win_tie_counts = np.zeros(4) #eval variable
 
 #uses same state format as blackjackEnv.py
 class multiHandBlackJack():
@@ -151,23 +150,9 @@ class multiHandBlackJack():
 			#check the sum (0th element) in each player state vs dealer's sum
 			if(player_states[i][0] > player_states[num_players][0]):
 				player_balances[i] += betAmount
-				#win_tie_counts[i] += 1 #for eval
 			elif(player_states[i][0] < player_states[num_players][0]):
 				player_balances[i] -= betAmount
-			#else:
-				#win_tie_counts[i] += 1 #for eval
 			#otherwise, hand is a push
-
-'''
-#test
-print("Ok starting...")
-game = multiHandBlackJack()
-game.onNextBet(100)
-
-print("\nResults...")
-for i in range(num_players):
-	print("\nBalance of Player " + str(i) + ": " + str(player_balances[i]))
-'''
 
 ### GUI methods 
 
@@ -175,10 +160,6 @@ for i in range(num_players):
 def onBetPress(betAmount, game, balance_labels, net_return_label, sum_labels, hand_labels):
 	#conduct next hand
 	game.onNextBet(betAmount)
-
-	#eval success rates
-	#for count in win_tie_counts:
-	#	print("\n()()()()()()()()()()()COUNT: " + str(count))
 
 	#update balance labels
 	for i in range(num_players):

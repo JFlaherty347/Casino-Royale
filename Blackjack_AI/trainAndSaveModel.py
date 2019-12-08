@@ -80,7 +80,7 @@ class TrainAndSaveModel(network.Network):
 
             buffer.add_batch(traject)
 
-    #average the reward gained by the policy (TODO: parallelize this function)
+    #average the reward gained by the policy
     def avg_return(env, policy, num_episodes = 10):
 
         total_return = 0.0
@@ -102,9 +102,6 @@ class TrainAndSaveModel(network.Network):
     #
     #MAIN EXECUTION
     #
-
-    #check for eager execution (should be default in tf2.0)
-    #print("****************Executing Eagerly: " + str(tf.executing_eagerly()) )
 
     #get start time
     start_time = time.time()
@@ -134,7 +131,6 @@ class TrainAndSaveModel(network.Network):
     replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(agent.collect_data_spec, 
                                                                    batch_size = tf_env.batch_size,
                                                                    max_length = replay_buffer_capacity)
-
 
     #add an observer to add to the buffer
     replay_observer = [replay_buffer.add_batch]
@@ -192,14 +188,13 @@ class TrainAndSaveModel(network.Network):
 
     #results
 
-    #runtime
+    #output runtime
     print("<><><>runtime: %s seconds<><><>" %(time.time() - start_time))
 
     #save the trained agent in the saved_model format for later use
     saver = policy_saver.PolicySaver(agent.policy, batch_size = None)
     saver.save('./models/policyF')
     tf.saved_model.save(agent, "./models/")
-
 
     #produce graph of training process
     iterations = range(0, num_iterations+1, eval_interval)

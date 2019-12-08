@@ -38,7 +38,6 @@ starting_balance = 5000
 num_players = 4
 player_balances = [starting_balance] * num_players	#money of each player
 player_states = np.zeros((num_players + 1, 9))			#current sums and cards of players AND dealer
-#win_tie_counts = np.zeros(4) #eval variable
 
 #uses same state format as blackjackEnv.py
 class multiHandBlackJack():
@@ -150,23 +149,9 @@ class multiHandBlackJack():
 			#check the sum (0th element) in each player state vs dealer's sum
 			if(player_states[i][0] > player_states[num_players][0]):
 				player_balances[i] += betAmount
-				#win_tie_counts[i] += 1 #for eval
 			elif(player_states[i][0] < player_states[num_players][0]):
 				player_balances[i] -= betAmount
-			#else:
-				#win_tie_counts[i] += 1 #for eval
 			#otherwise, hand is a push
-
-'''
-#test
-print("Ok starting...")
-game = multiHandBlackJack()
-game.onNextBet(100)
-
-print("\nResults...")
-for i in range(num_players):
-	print("\nBalance of Player " + str(i) + ": " + str(player_balances[i]))
-'''
 
 ### GUI methods 
 
@@ -174,10 +159,6 @@ for i in range(num_players):
 def onBetPress(betAmount, game, balance_labels, net_return_label, sum_labels, hand_labels):
 	#conduct next hand
 	game.onNextBet(betAmount)
-
-	#eval success rates
-	#for count in win_tie_counts:
-	#	print("\n()()()()()()()()()()()COUNT: " + str(count))
 
 	#update balance labels
 	for i in range(num_players):
@@ -259,14 +240,14 @@ def createBlackjackWindow(root):
 
 	#create a window, title it, and set size
 	window = Toplevel(root)
-	#window.title("Blackjack")
-	#window.geometry('1700x900')
+	root.title("Blackjack")
+	root.geometry('1700x900')
 
 	#get icon file
-	#icon = PhotoImage(file = "../Blackjack_AI/assets/blackjackicon.png")
+	icon = PhotoImage(file = "../Blackjack_AI/assets/blackjackicon.png")
 
 	#set icon of window
-	#window.iconphoto(False, icon)
+	root.iconphoto(False, icon)
 
 	#widget creation
 
@@ -396,9 +377,3 @@ def createBlackjackWindow(root):
 		command = lambda: onResetPress(balance_labels = balances, net_return_label = net_return_label), font  = ("Garamond", 16),
 		activebackground = "red", width = 20)
 	reset_balances_button.grid(column = 3, row = 0, pady = 25, padx = 10)
-
-
-#root = Tk()
-#createBlackjackWindow(root)
-###start window
-#root.mainloop()
