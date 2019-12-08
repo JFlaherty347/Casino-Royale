@@ -1,5 +1,15 @@
 '''
+Author: Joseph Flaherty
+Date: Dec 8, 2019
+
 This class holds the training loop and outputs a saved model and policy for later use.
+Most of it is down sequentially so see specific comments down below.
+
+methods:
+collect_data() - records data for a specified number of steps for use in replay buffer by simulating the current policy
+avg_return() - calculates average return of AI to measure its success
+
+
 '''
 import tensorflow as tf
 import numpy as np

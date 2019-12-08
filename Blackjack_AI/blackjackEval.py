@@ -1,6 +1,24 @@
 '''
-slight modificatino that uses multiHandBlackjack.py as a skeleton for running 100000
+Author: Joseph Flaherty
+Date: Dec 8, 2019
+
+A slight modificatino that uses multiHandBlackjack.py as a skeleton for running 100000
 games of blackjack for each player to evaluate the effectiveness of the model. 
+
+blackjack methods:
+__init__() - loads model, creates environment and wraps it as a tf_env
+getDealerState() - simulates a dealer who hits until their sum is at least 17
+onNextBet() -  simulates a hand of blackjack using the loaded model to make decisions
+
+GUI methods:
+onBetPress() - runs a hand of blackjack and then updates hands (used from bet button)
+onResetPress() - reset balances and update labels
+updateNetReturn() - shows the wins/losses of all players combined
+updateHands() - update GUI to show new cards
+getCardImagePath() - finds the correct directory to load card images from
+getRandomSuit() - assigns a random suit to each displayed card since the agent only observes the card values, not their suits
+createBlackjackWindow() - loads all required GUI elements into a new window for playing blackjack, creates all base GUI elements
+
 '''
 import tensorflow as tf
 import threading
