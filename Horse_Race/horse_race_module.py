@@ -242,11 +242,11 @@ def step(gamblers, window, horse_progress_bar, dialogue_listbox):
     # Check who won
     for gamble in gamblers:
         if gamble.horseBet == finishedHorses[0].horseNumber:
-            #print("Player %d Has Won $%d:" % (gamble.gamblerName, gamble.bet))
+            print("Player %d Has Won $%d:" % (gamble.gamblerName, gamble.bet))
             dialogue_listbox.insert(tkinter.END, ("Player %d Has Won $%d:" % (gamble.gamblerName, gamble.bet)))
             gamble.wonBet()
         else:
-            #print("Player %d Has Lost $%d:" % (gamble.gamblerName, gamble.bet))
+            print("Player %d Has Lost $%d:" % (gamble.gamblerName, gamble.bet))
             dialogue_listbox.insert(tkinter.END, ("Player %d Has Lost $%d:" % (gamble.gamblerName, gamble.bet)))
             gamble.lostBet()
 
