@@ -1,31 +1,31 @@
+#Name: Aaron Jimenez, Joseph Flaherty
+#Date: Dec 8, 2019
+#Set up GUI for main menu
+
 import pygame, tkinter
 import sys, os
-#cwd = os.getcwd()
-#os.chdir(cwd+"/Horse Race/")
 
-#os.putenv('SDL_AUDIODRIVER', 'alsa')
-#os.putenv('SDL_AUDIODEV', '/dev/audio')
 
 print(os.getcwd())
 sys.path.insert(1, "../Horse_Race/")
-import horse_race_module_prev
+import horse_race_module
 
-#os.chdir(cwd+"/Blackjack AI/")
+
 sys.path.insert(1, "../Blackjack_AI/")
 import multiHandBlackjack
 
-#os.chdir(cwd)
-
-#print(os.getcwd()+ "*"*10)
 #Track selection
+sys.path.insert(1, "../Home Menu/")
 track_name_list = ("R/B", 'G/S', 'R/S', 'D/P')
-track_list = ("GS_GameCorner.mp3", "GS_GameCorner.mp3", "RS_GameCorner.mp3", "DP_GameCorner.mp3")
+track_list = ("RB_GameCorner.mp3", "GS_GameCorner.mp3", "RS_GameCorner.mp3", "DP_GameCorner.mp3")
 current_track = 0
 
 pygame.mixer.init()
 pygame.mixer.music.load(track_list[current_track])
 pygame.mixer.music.play()
 
+
+#Audio track increment
 def incrementTrack():
     global current_track
     current_track = (current_track + 1) % len(track_list)
@@ -40,7 +40,7 @@ def incrementTrack():
     pygame.mixer.music.play()
 
 
-
+#Audio Track decrement
 def decrementTrack():
     global current_track
     current_track = abs(current_track - 1) % len(track_list)
@@ -90,7 +90,7 @@ next_track_button.grid(row = 0, column = 7)
 
 
 
-horse_race_button = tkinter.Button(topFrame, text = 'Horse Race', width = 10, command = horse_race_module_prev.horseRun)
+horse_race_button = tkinter.Button(topFrame, text = 'Horse Race', width = 10, command = horse_race_module.horseRun)
 horse_race_button.grid(row = 5, column = 4)
 
 blackjack_button = tkinter.Button(topFrame, text = 'Blackjack', width = 10, command = lambda : multiHandBlackjack.createBlackjackWindow(m))
