@@ -79,12 +79,16 @@ class gambler():
         self.horseBet = random.randrange(1, maxHorses + 1)
         self.cash = currentAmountOfMoney
         self.bet = random.randrange(1, self.cash + 1)
+        self.gamblerID = self.gamblerIDGen()
 
     def wonBet(self):
         self.cash += self.bet
 
     def lostBet(self):
         self.cash -= self.bet
+    
+    def gamblerIDGen(self):
+        return str(hex(random.randrange(0, 1100) * 5678978))[2:]
 
 
 def horseRun():
@@ -112,7 +116,7 @@ def horseRun():
     
 
     #Create GUI for horse race
-    window = tkinter.Toplevel()
+    window = tkinter.Toplevel(width = 500)
     window.title("Horse Race")
 
     
@@ -128,8 +132,26 @@ def horseRun():
     scrollbar_result_list.pack(side = tkinter.RIGHT, fill = tkinter.Y)
 
     #create dialogue listbox
-    dialogue_listbox = tkinter.Listbox(dialogue_frame)
+    dialogue_listbox = tkinter.Listbox(dialogue_frame, width = 30)
     dialogue_listbox.pack(side = tkinter.LEFT)
+
+    #Print Receipt menu bar
+    menu = tkinter.Menu(window)
+    window.config(menu = menu)
+
+    fileMenu = tkinter.Menu(menu)
+    menu.add_cascade(label = "File", menu = fileMenu)
+
+
+
+    receipt_print = lambda : printReciept(gamblers)
+    fileMenu.add_command(label = "Print Reciept", command = receipt_print)
+    fileMenu.add_command(label = "Quit", command = window.destroy)
+    #print_receipt_frame = tkinter.Frame(window)
+    #print_receipt_frame.pack(side = tkinter.BOTTOM)
+    #print_receipt_button = tkinter.Button(print_receipt_frame, text = 'Print Receipt', command = receipt_print)
+    #print_receipt_button.pack(padx = 50)
+
 
 
     
@@ -157,6 +179,20 @@ def horseRun():
     window.mainloop()
 
     print("\t\tEND HORSE RACE")
+
+
+def printReciept(gamblers):
+    gamblerRecieptName = list("../Receipts/PlayerXReciept.txt")
+
+    for player in gamblers:
+       gamblerRecieptName[18] = str(player.gamblerName)
+       
+       newfile = open("".join(gamblerRecieptName), "w")
+       print(("🍙"*20)+"Player ID: %s" %player.gamblerID + ("🍙"*20), file = newfile)
+       print(("\t"*10)+"Total Player Credits $%d" %player.cash, file = newfile)
+       print(("\n"*15)+"\t"*5+"\u00A9 Casino Royale\u2122 Enterprises", file = newfile)
+       newfile.close()
+
 
 def step(gamblers, window, horse_progress_bar, dialogue_listbox):
     
