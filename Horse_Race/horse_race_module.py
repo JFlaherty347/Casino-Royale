@@ -1,3 +1,7 @@
+#Author: Aaron Jimenez
+#Date: Dec 08, 2019
+#Runs horse race simulation using multithreading and GUI using the tkinter library
+
 import threading
 import random
 import time
@@ -17,6 +21,7 @@ playAgain = True
 numberOfGamblers = 5
 maxHorses = 5
 
+#Class that creates and runs each horse race thread, child of threading.Thread class
 class horseRaceThread(threading.Thread):
     def __init__(self, name, horse):
         threading.Thread.__init__(self)
@@ -59,7 +64,8 @@ class horseRaceThread(threading.Thread):
         self.horse.printHorse()
         lock.release()
 
-
+#Class that creates each horse
+#Contains the horse's ID number, their max speed, and at what time they finished
 class horse():
     def __init__(self, horseNumber, maxSpeed):
         self.horseNumber = horseNumber
@@ -72,21 +78,27 @@ class horse():
     def setFinish(self, timeFinish):
         self.finishTime = timeFinish
 
-
+#Class that creates each gambler
+#Contains their name, gambler ID number, their current amount of money, and which horse they are currently betting on
 class gambler():
     def __init__(self, gamblerName, maxHorses, currentAmountOfMoney):
         self.gamblerName = gamblerName
         self.horseBet = random.randrange(1, maxHorses + 1)
         self.cash = currentAmountOfMoney
         self.bet = random.randrange(1, self.cash + 1)
+        self.gamblerID = self.gamblerIDGen()
 
     def wonBet(self):
         self.cash += self.bet
 
     def lostBet(self):
         self.cash -= self.bet
+    
+    def gamblerIDGen(self):
+        return str(hex(random.randrange(0, 1100) * 5678978))[2:]
 
 
+#Initializes and prepares for simulation
 def horseRun():
     """ pygame.mixer.init()
     pygame.mixer.music.load("gameCorner.mp3")
@@ -112,24 +124,11 @@ def horseRun():
     
 
     #Create GUI for horse race
-    window = tkinter.Toplevel()
+    window = tkinter.Toplevel(width = 500)
     window.title("Horse Race")
 
-    progress_bar_frame = tkinter.Frame(window)
-    progress_bar_frame.pack(side = tkinter.LEFT, pady = 15)
-
-    horse_progress_bar = []
-    #create progress bars
-    for i in range(0, maxHorses):
-        horse_and_bar = (tkinter.Label(progress_bar_frame, text = 'Horse '+str(i + 1)+": "), ttk.Progressbar(progress_bar_frame, orient = tkinter.HORIZONTAL, length = 100, maximum = finishLine, mode = 'determinate'))
-        horse_and_bar[0].pack()
-        horse_and_bar[1].pack()
-        horse_progress_bar.append(horse_and_bar)
     
-    step_horse = lambda : step(window, horse_progress_bar)
-    #Create run button
-    tkinter.Button(progress_bar_frame, text = "RUN", command = step_horse).pack()
-    tkinter.Button(progress_bar_frame,text = "DONE", command = window.withdraw).pack()
+   
 
 
     #Create dialogue frame
@@ -141,79 +140,83 @@ def horseRun():
     scrollbar_result_list.pack(side = tkinter.RIGHT, fill = tkinter.Y)
 
     #create dialogue listbox
-    dialogue_listbox = tkinter.Listbox(dialogue_frame)
+    dialogue_listbox = tkinter.Listbox(dialogue_frame, width = 30)
     dialogue_listbox.pack(side = tkinter.LEFT)
 
+    #Print Receipt menu bar
+    menu = tkinter.Menu(window)
+    window.config(menu = menu)
+
+    fileMenu = tkinter.Menu(menu)
+    menu.add_cascade(label = "File", menu = fileMenu)
 
 
+
+    receipt_print = lambda : printReciept(gamblers)
+    fileMenu.add_command(label = "Print Reciept", command = receipt_print)
+    fileMenu.add_command(label = "Quit", command = window.destroy)
 
 
     
-    while playAgain:
-        
-        #Initialize all vars to default state
-        threads.clear()
-        finishedHorses.clear()
 
-        #Clear horse_progress_bars
-        #window.withdraw()
 
-        
 
-        
+    #progress bar frame
+    progress_bar_frame = tkinter.Frame(window)
+    progress_bar_frame.pack(side = tkinter.LEFT, pady = 15)
 
-        # Create horses and threads
-        for i in range(1, maxHorses + 1):
-            #horseCompletion.extend([" ", " ", " ", " ", " "])
-            threads.append(horseRaceThread(name=i, horse=horse(horseNumber=i, maxSpeed=random.randrange(13, 18))))
-        
-        
+    horse_progress_bar = []
+    #create progress bars
+    for i in range(0, maxHorses):
+        horse_and_bar = (tkinter.Label(progress_bar_frame, text = 'Horse '+str(i + 1)+": "), ttk.Progressbar(progress_bar_frame, orient = tkinter.HORIZONTAL, length = 100, maximum = finishLine, mode = 'determinate'))
+        horse_and_bar[0].pack()
+        horse_and_bar[1].pack()
+        horse_progress_bar.append(horse_and_bar)
+    
+    step_horse = lambda : step(gamblers, window, horse_progress_bar, dialogue_listbox)
 
-        # Start threads
-        for x in threads:
-            x.start()
+    #Create run button
+    tkinter.Button(progress_bar_frame, text = "RUN", command = step_horse).pack()
+    tkinter.Button(progress_bar_frame,text = "DONE", command = window.destroy).pack()
+
+    window.mainloop()
+
+    print("\t\tEND HORSE RACE")
+
+#Prints the receipt of every gambler to file located in the receipts folder
+def printReciept(gamblers):
+    gamblerRecieptName = list("../Receipts/PlayerXReciept.txt")
+
+    for player in gamblers:
+       gamblerRecieptName[18] = str(player.gamblerName)
+       
+       newfile = open("".join(gamblerRecieptName), "w")
+       print(("🍙"*20)+"Player ID: %s" %player.gamblerID + ("🍙"*20), file = newfile)
+       print(("\t"*10)+"Total Player Credits $%d" %player.cash, file = newfile)
+       print(("\n"*15)+"\t"*5+"\u00A9 Casino Royale\u2122 Enterprises", file = newfile)
+       newfile.close()
+
+#Runs the simulation of the horse race using the queue of the positions of each horse that was generated using multithreading
+def step(gamblers, window, horse_progress_bar, dialogue_listbox):
+    
+    #Initialize all vars to default state
+    threads.clear()
+    finishedHorses.clear()
+
+    # Create horses and threads
+    for i in range(1, maxHorses + 1):
+        #horseCompletion.extend([" ", " ", " ", " ", " "])
+        threads.append(horseRaceThread(name=i, horse=horse(horseNumber=i, maxSpeed=random.randrange(13, 18))))
+    
+    # Start threads
+    for x in threads:
+        x.start()
 
         # Join threads
-        for x in threads:
-            x.join()
+    for x in threads:
+        x.join()
 
-        #window.mainloop()
-        
-        #Simulate progress bars
-        window.update()
-        window.deiconify()
-        #window.mainloop()
-
-        # print which horse won
-        # global finishedHorses
-        print("\nWinner: Horse %d\n" % finishedHorses[0].horseNumber)
-        print("FUCK!")
-        dialogue_listbox.insert(tkinter.END, "")
-        dialogue_listbox.insert(tkinter.END, ("Winner: Horse %d" % finishedHorses[0].horseNumber))
-        dialogue_listbox.insert(tkinter.END, "")
-
-
-        # Check who won
-        for gamble in gamblers:
-            if gamble.horseBet == finishedHorses[0].horseNumber:
-                print("Player %d Has Won $%d:" % (gamble.gamblerName, gamble.bet))
-                dialogue_listbox.insert(tkinter.END, ("Player %d Has Won $%d:" % (gamble.gamblerName, gamble.bet)))
-                gamble.wonBet()
-            else:
-                print("Player %d Has Lost $%d:" % (gamble.gamblerName, gamble.bet))
-                dialogue_listbox.insert(tkinter.END, ("Player %d Has Lost $%d:" % (gamble.gamblerName, gamble.bet)))
-                gamble.lostBet()
-
-            print("\tCurrent Credits: $%d" % gamble.cash)
-            dialogue_listbox.insert(tkinter.END, (" "*5+"Current Credits: $%d" % gamble.cash))
-
-        finishedHorses = []
-        userInput = input("Play Again?(Y/N): ")
-        playAgain = (userInput.upper() == "Y")
-
-    #pygame.mixer.fadeout(5000)
-
-def step(window, horse_progress_bar):
+    #Simulate horse race
     while (len(horse_progress_bars_queue) > 0):
         x = horse_progress_bars_queue.popleft()
         if (x[1] >= finishLine):
@@ -222,6 +225,33 @@ def step(window, horse_progress_bar):
             horse_progress_bar[x[0]-1][1]['value'] = x[1]
         window.update_idletasks()
         time.sleep(.008)
+        
+    #Print horses
+    dialogue_listbox.insert(tkinter.END, (("*"*5) + "Race Results" + ("*"*5)))
+    for race_horse in finishedHorses:
+        dialogue_listbox.insert(tkinter.END, (" "*5) + ("Horse %d finished at time %d" %(race_horse.horseNumber, race_horse.finishTime)))
+        time.sleep(0.1)
+
+
+    # print which horse won
+    dialogue_listbox.insert(tkinter.END, "")
+    dialogue_listbox.insert(tkinter.END, ("Winner: Horse %d" % finishedHorses[0].horseNumber))
+    dialogue_listbox.insert(tkinter.END, "")
+        
+
+    # Check who won
+    for gamble in gamblers:
+        if gamble.horseBet == finishedHorses[0].horseNumber:
+            #print("Player %d Has Won $%d:" % (gamble.gamblerName, gamble.bet))
+            dialogue_listbox.insert(tkinter.END, ("Player %d Has Won $%d:" % (gamble.gamblerName, gamble.bet)))
+            gamble.wonBet()
+        else:
+            #print("Player %d Has Lost $%d:" % (gamble.gamblerName, gamble.bet))
+            dialogue_listbox.insert(tkinter.END, ("Player %d Has Lost $%d:" % (gamble.gamblerName, gamble.bet)))
+            gamble.lostBet()
+
+        #print("\tCurrent Credits: $%d" % gamble.cash)
+        dialogue_listbox.insert(tkinter.END, (" "*5+"Current Credits: $%d" % gamble.cash))
     
 
         

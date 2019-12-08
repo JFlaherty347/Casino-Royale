@@ -115,8 +115,21 @@ def horseRun():
     window = tkinter.Toplevel()
     window.title("Horse Race")
 
+    progress_bar_frame = tkinter.Frame(window)
+    progress_bar_frame.pack(side = tkinter.LEFT, pady = 15)
+
+    horse_progress_bar = []
+    #create progress bars
+    for i in range(0, maxHorses):
+        horse_and_bar = (tkinter.Label(progress_bar_frame, text = 'Horse '+str(i + 1)+": "), ttk.Progressbar(progress_bar_frame, orient = tkinter.HORIZONTAL, length = 100, maximum = finishLine, mode = 'determinate'))
+        horse_and_bar[0].pack()
+        horse_and_bar[1].pack()
+        horse_progress_bar.append(horse_and_bar)
     
-   
+    step_horse = lambda : step(window, horse_progress_bar)
+    #Create run button
+    tkinter.Button(progress_bar_frame, text = "RUN", command = step_horse).pack()
+    tkinter.Button(progress_bar_frame,text = "DONE", command = window.withdraw).pack()
 
 
     #Create dialogue frame
@@ -132,37 +145,15 @@ def horseRun():
     dialogue_listbox.pack(side = tkinter.LEFT)
 
 
+
+
+
     
-
-
-
-    #progress bar frame
-    progress_bar_frame = tkinter.Frame(window)
-    progress_bar_frame.pack(side = tkinter.LEFT, pady = 15)
-
-    horse_progress_bar = []
-    #create progress bars
-    for i in range(0, maxHorses):
-        horse_and_bar = (tkinter.Label(progress_bar_frame, text = 'Horse '+str(i + 1)+": "), ttk.Progressbar(progress_bar_frame, orient = tkinter.HORIZONTAL, length = 100, maximum = finishLine, mode = 'determinate'))
-        horse_and_bar[0].pack()
-        horse_and_bar[1].pack()
-        horse_progress_bar.append(horse_and_bar)
-    
-    step_horse = lambda : step(gamblers, window, horse_progress_bar, dialogue_listbox)
-
-    #Create run button
-    tkinter.Button(progress_bar_frame, text = "RUN", command = step_horse).pack()
-    tkinter.Button(progress_bar_frame,text = "DONE", command = window.destroy).pack()
-
-    window.mainloop()
-
-    print("\t\tEND HORSE RACE")
-
-def step(gamblers, window, horse_progress_bar, dialogue_listbox):
-    
-    #Initialize all vars to default state
-    threads.clear()
-    finishedHorses.clear()
+    while playAgain:
+        
+        #Initialize all vars to default state
+        threads.clear()
+        finishedHorses.clear()
 
         #Clear horse_progress_bars
         #window.withdraw()
@@ -171,20 +162,58 @@ def step(gamblers, window, horse_progress_bar, dialogue_listbox):
 
         
 
-    # Create horses and threads
-    for i in range(1, maxHorses + 1):
-        #horseCompletion.extend([" ", " ", " ", " ", " "])
-        threads.append(horseRaceThread(name=i, horse=horse(horseNumber=i, maxSpeed=random.randrange(13, 18))))
-    
-    # Start threads
-    for x in threads:
-        x.start()
+        # Create horses and threads
+        for i in range(1, maxHorses + 1):
+            #horseCompletion.extend([" ", " ", " ", " ", " "])
+            threads.append(horseRaceThread(name=i, horse=horse(horseNumber=i, maxSpeed=random.randrange(13, 18))))
+        
+        
+
+        # Start threads
+        for x in threads:
+            x.start()
 
         # Join threads
-    for x in threads:
-        x.join()
+        for x in threads:
+            x.join()
 
-    #Simulate horse race
+        #window.mainloop()
+        
+        #Simulate progress bars
+        window.update()
+        window.deiconify()
+        #window.mainloop()
+
+        # print which horse won
+        # global finishedHorses
+        print("\nWinner: Horse %d\n" % finishedHorses[0].horseNumber)
+        print("FUCK!")
+        dialogue_listbox.insert(tkinter.END, "")
+        dialogue_listbox.insert(tkinter.END, ("Winner: Horse %d" % finishedHorses[0].horseNumber))
+        dialogue_listbox.insert(tkinter.END, "")
+
+
+        # Check who won
+        for gamble in gamblers:
+            if gamble.horseBet == finishedHorses[0].horseNumber:
+                print("Player %d Has Won $%d:" % (gamble.gamblerName, gamble.bet))
+                dialogue_listbox.insert(tkinter.END, ("Player %d Has Won $%d:" % (gamble.gamblerName, gamble.bet)))
+                gamble.wonBet()
+            else:
+                print("Player %d Has Lost $%d:" % (gamble.gamblerName, gamble.bet))
+                dialogue_listbox.insert(tkinter.END, ("Player %d Has Lost $%d:" % (gamble.gamblerName, gamble.bet)))
+                gamble.lostBet()
+
+            print("\tCurrent Credits: $%d" % gamble.cash)
+            dialogue_listbox.insert(tkinter.END, (" "*5+"Current Credits: $%d" % gamble.cash))
+
+        finishedHorses = []
+        userInput = input("Play Again?(Y/N): ")
+        playAgain = (userInput.upper() == "Y")
+
+    #pygame.mixer.fadeout(5000)
+
+def step(window, horse_progress_bar):
     while (len(horse_progress_bars_queue) > 0):
         x = horse_progress_bars_queue.popleft()
         if (x[1] >= finishLine):
@@ -193,35 +222,6 @@ def step(gamblers, window, horse_progress_bar, dialogue_listbox):
             horse_progress_bar[x[0]-1][1]['value'] = x[1]
         window.update_idletasks()
         time.sleep(.008)
-        
-    #Print horses
-    dialogue_listbox.insert(tkinter.END, (("*"*5) + "Race Results" + ("*"*5)))
-    for race_horse in finishedHorses:
-        dialogue_listbox.insert(tkinter.END, (" "*5) + ("Horse %d finished at time %d" %(race_horse.horseNumber, race_horse.finishTime)))
-        time.sleep(0.1)
-
-
-    # print which horse won
-    # global finishedHorses
-    #print("\nWinner: Horse %d\n" % finishedHorses[0].horseNumber)
-    dialogue_listbox.insert(tkinter.END, "")
-    dialogue_listbox.insert(tkinter.END, ("Winner: Horse %d" % finishedHorses[0].horseNumber))
-    dialogue_listbox.insert(tkinter.END, "")
-        
-
-    # Check who won
-    for gamble in gamblers:
-        if gamble.horseBet == finishedHorses[0].horseNumber:
-            #print("Player %d Has Won $%d:" % (gamble.gamblerName, gamble.bet))
-            dialogue_listbox.insert(tkinter.END, ("Player %d Has Won $%d:" % (gamble.gamblerName, gamble.bet)))
-            gamble.wonBet()
-        else:
-            #print("Player %d Has Lost $%d:" % (gamble.gamblerName, gamble.bet))
-            dialogue_listbox.insert(tkinter.END, ("Player %d Has Lost $%d:" % (gamble.gamblerName, gamble.bet)))
-            gamble.lostBet()
-
-        #print("\tCurrent Credits: $%d" % gamble.cash)
-        dialogue_listbox.insert(tkinter.END, (" "*5+"Current Credits: $%d" % gamble.cash))
     
 
         
