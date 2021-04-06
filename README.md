@@ -30,7 +30,7 @@ Which trained with the following average return:
 ## Application of Agent
 One goal of this project was to not just apply an AI to a pre-packaged problem, but instead utilize it as a solution to a problem similar to what real-world problems offer. To do this, it was necessary to first model the game of blackjack as an environment. The agent was applied in an application where it's policy is used to make decisions in a hand of blackjack visible to the user. The game state is shown through a GUI and also keeps track of running balances of players.
 
-![Image of Blackjack GUI](https://github.com/JFlaherty347/Casino-Royale/blob/master/Images/BlackjackGUI.png)
+![Image of Blackjack GUI](https://raw.githubusercontent.com/JFlaherty347/Casino-Royale/master/Images/BlackjackGUI.png)
 
 ## Use of Parallelism in Application
 Via Python's Threading library, it becomes much easier to keep track of multiple hands of blackjack at the same time. This emulates either having multiple players or playing multiple hands at the same time. Threads in python are primarily useful for organization because the [Global Interpreter Lock](https://wiki.python.org/moin/GlobalInterpreterLock) only allows one thread can have control over the interpreter at a time.
