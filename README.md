@@ -25,7 +25,7 @@ An updated version of the training process was created with the following reward
 
 Which trained with the following average return:
 
-![Graph of Training 2](https://github.com/JFlaherty347/Casino-Royale/blob/master/Blackjack_AI/graphs/LessSevereAntiLow.png)
+![Graph of Training 2](https://raw.githubusercontent.com/JFlaherty347/Casino-Royale/master/Blackjack_AI/graphs/LessSevereAntiLow.png)
 
 ## Application of Agent
 One goal of this project was to not just apply an AI to a pre-packaged problem, but instead utilize it as a solution to a problem similar to what real-world problems offer. To do this, it was necessary to first model the game of blackjack as an environment. The agent was applied in an application where it's policy is used to make decisions in a hand of blackjack visible to the user. The game state is shown through a GUI and also keeps track of running balances of players.
