@@ -14,7 +14,7 @@ The training process involved 200,000 iterations, rewarding the agent as follows
 ```
 The process was accelerated through using Tensorflow-GPU, allowing more massive parallelization during the lengthy training process. A graph of the average return that the agent was getting during training is shown below. Keep in mind that the graph is scaled from 0 to 21, with 0 being the best for any iteration. The graph illustrates average return so reaching zero is improbable as it would require the agent to get a score of 21 1000 times in a row.
 
-![Graph of Training](https://github.com/JFlaherty347/Casino-Royale/blob/master/Blackjack_AI/graphs/DDQN-FINAL-200k.png)
+![Graph of Training](https://raw.githubusercontent.com/JFlaherty347/Casino-Royale/master/Blackjack_AI/graphs/DDQN-FINAL-200k.png)
 
 An updated version of the training process was created with the following reward:
 ```
